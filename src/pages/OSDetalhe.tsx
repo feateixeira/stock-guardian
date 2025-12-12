@@ -93,7 +93,7 @@ export default function OSDetalhe() {
     
     // Atualizar status da OS
     await supabase.from('ordens_servico').update({ 
-      status: 'confirmada' as const,
+      status: 'confirmada' as const, 
       updated_at: new Date().toISOString()
     }).eq('id', id);
     
@@ -339,7 +339,7 @@ export default function OSDetalhe() {
           <div className="grid grid-cols-2 gap-16 mt-12">
             <div className="text-center signature-line">
               <p className="font-bold mb-2">Funcionário</p>
-              <p>{os.funcionario?.nome}</p>
+                <p>{os.funcionario?.nome}</p>
             </div>
             <div className="text-center signature-line">
               <p className="font-bold mb-2">Responsável</p>

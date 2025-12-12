@@ -332,8 +332,8 @@ export default function CriarOS() {
           <CardContent className="space-y-4">
             <div className="relative flex gap-2">
               <div className="flex-1 relative">
-                <Input
-                  value={onuCodigo}
+              <Input
+                value={onuCodigo}
                   onChange={(e) => {
                     const value = e.target.value;
                     setOnuCodigo(value);
