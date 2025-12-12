@@ -224,12 +224,21 @@ export default function OSDetalhe() {
   return (
     <Layout>
       <div className="space-y-4 print-area">
+        {/* Header visível apenas na impressão */}
+        <div className="hidden print:block print-header">
+          <h1>ORDEM DE SERVIÇO #{os.numero}</h1>
+          <p>Sistema de Controle de Estoque - Fibra Óptica</p>
+        </div>
+
         <div className="flex justify-between items-center no-print">
           <h1 className="text-2xl font-bold">OS #{os.numero}</h1>
           <Button variant="outline" onClick={() => window.print()}><Printer size={16} className="mr-2" />Imprimir</Button>
         </div>
 
-        <Card>
+        {/* Título para impressão */}
+        <h1 className="hidden print:block text-2xl font-bold text-center mb-4">OS #{os.numero}</h1>
+
+        <Card className="print:shadow-none print:border">
           <CardHeader><CardTitle>Detalhes</CardTitle></CardHeader>
           <CardContent className="grid grid-cols-2 gap-4">
             <div><strong>Funcionário:</strong> {os.funcionario?.nome}</div>
@@ -239,35 +248,57 @@ export default function OSDetalhe() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle>Itens ({itens.length})</CardTitle></CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader><TableRow><TableHead>Item</TableHead><TableHead>Qtd</TableHead><TableHead>Un</TableHead></TableRow></TableHeader>
-              <TableBody>{itens.map(i => <TableRow key={i.id}><TableCell>{i.item?.nome}</TableCell><TableCell>{i.quantidade}</TableCell><TableCell>{i.item?.unidade}</TableCell></TableRow>)}</TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        {itens.length > 0 && (
+          <Card className="print:shadow-none print:border">
+            <CardHeader><CardTitle>Itens ({itens.length})</CardTitle></CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader><TableRow><TableHead>Item</TableHead><TableHead>Qtd</TableHead><TableHead>Un</TableHead></TableRow></TableHeader>
+                <TableBody>{itens.map(i => <TableRow key={i.id}><TableCell>{i.item?.nome}</TableCell><TableCell>{i.quantidade}</TableCell><TableCell>{i.item?.unidade}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader><CardTitle>ONUs ({onus.length})</CardTitle></CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader><TableRow><TableHead>Código</TableHead></TableRow></TableHeader>
-              <TableBody>{onus.map(o => <TableRow key={o.id}><TableCell className="font-mono">{o.onu?.codigo_unico}</TableCell></TableRow>)}</TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+        {onus.length > 0 && (
+          <Card className="print:shadow-none print:border">
+            <CardHeader><CardTitle>ONUs ({onus.length})</CardTitle></CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader><TableRow><TableHead>Código</TableHead></TableRow></TableHeader>
+                <TableBody>{onus.map(o => <TableRow key={o.id}><TableCell className="font-mono">{o.onu?.codigo_unico}</TableCell></TableRow>)}</TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
 
         {os.assinatura_base64 && (
-          <Card>
+          <Card className="print:shadow-none print:border">
             <CardHeader><CardTitle>Assinatura</CardTitle></CardHeader>
             <CardContent>
-              <img src={os.assinatura_base64} alt="Assinatura" className="border max-w-md" />
+              <img src={os.assinatura_base64} alt="Assinatura" className="border max-w-md print:max-w-xs" />
               <p className="text-sm text-muted-foreground mt-2">Coletada em: {new Date(os.assinatura_data).toLocaleString('pt-BR')}</p>
             </CardContent>
           </Card>
         )}
+
+        {/* Área de assinatura manual para impressão */}
+        <div className="hidden print:block mt-8 pt-4 border-t">
+          <div className="grid grid-cols-2 gap-8 mt-8">
+            <div className="text-center">
+              <div className="border-t border-black pt-2 mt-16">
+                <p><strong>Funcionário</strong></p>
+                <p>{os.funcionario?.nome}</p>
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="border-t border-black pt-2 mt-16">
+                <p><strong>Responsável</strong></p>
+              </div>
+            </div>
+          </div>
+          <p className="text-center text-sm mt-8">Documento gerado em: {new Date().toLocaleString('pt-BR')}</p>
+        </div>
 
         <div className="flex gap-2 no-print">
           {os.status === 'rascunho' && <Button onClick={() => setShowSignature(true)}>Confirmar OS</Button>}
