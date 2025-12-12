@@ -26,6 +26,8 @@ const statusLabels: Record<string, string> = {
   encerrada: 'Encerrada',
 };
 
+type OsStatus = 'rascunho' | 'confirmada' | 'cancelada' | 'devolucao_parcial' | 'encerrada';
+
 export default function OSLista() {
   const [osList, setOsList] = useState<OS[]>([]);
   const [funcionarios, setFuncionarios] = useState<{ id: string; nome: string }[]>([]);
@@ -44,8 +46,8 @@ export default function OSLista() {
     setIsLoading(true);
     let query = supabase.from('ordens_servico').select('id, numero, status, created_at, funcionario:funcionarios(nome)').order('numero', { ascending: false });
     
-    if (filtroFunc) query = query.eq('funcionario_id', filtroFunc);
-    if (filtroStatus) query = query.eq('status', filtroStatus);
+    if (filtroFunc && filtroFunc !== 'all') query = query.eq('funcionario_id', filtroFunc);
+    if (filtroStatus && filtroStatus !== 'all') query = query.eq('status', filtroStatus as OsStatus);
     if (dataInicio) query = query.gte('created_at', dataInicio);
     if (dataFim) query = query.lte('created_at', dataFim + 'T23:59:59');
 
@@ -80,7 +82,7 @@ export default function OSLista() {
             <Select value={filtroFunc} onValueChange={setFiltroFunc}>
               <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {funcionarios.map(f => <SelectItem key={f.id} value={f.id}>{f.nome}</SelectItem>)}
               </SelectContent>
             </Select>
@@ -90,7 +92,7 @@ export default function OSLista() {
             <Select value={filtroStatus} onValueChange={setFiltroStatus}>
               <SelectTrigger><SelectValue placeholder="Todos" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {Object.entries(statusLabels).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}
               </SelectContent>
             </Select>
