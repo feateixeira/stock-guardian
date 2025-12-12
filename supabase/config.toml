@@ -1,0 +1,7 @@
+# Configuração do Supabase
+# Este arquivo pode ser usado com o Supabase CLI
+# Para projeto local, execute: supabase init
+# Para linkar a um projeto remoto: supabase link --project-ref seu-project-ref
+
+# project_id = "seu-project-id-aqui"
+# Substitua pelo ID do seu projeto Supabase quando necessário
