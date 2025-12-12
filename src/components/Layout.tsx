@@ -34,8 +34,8 @@ export function Layout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen flex no-print">
-      <aside className="w-64 bg-sidebar text-sidebar-foreground flex flex-col">
+    <div className="min-h-screen flex">
+      <aside className="w-64 bg-sidebar text-sidebar-foreground flex flex-col print:hidden">
         <div className="p-4 border-b border-sidebar-border">
           <h1 className="text-lg font-bold">Controle de Estoque</h1>
           <p className="text-sm text-sidebar-foreground/70">Fibra Óptica</p>
@@ -77,7 +77,7 @@ export function Layout({ children }: { children: ReactNode }) {
           </Button>
         </div>
       </aside>
-      <main className="flex-1 p-6 overflow-auto">{children}</main>
+      <main className="flex-1 p-6 overflow-auto print:p-0">{children}</main>
     </div>
   );
 }
