@@ -39,70 +39,181 @@ export default function OSDetalhe() {
   };
 
   const handleConfirmar = async (assinatura: string) => {
+    // Validar estoque primeiro
     for (const i of itens) {
       const { data: item } = await supabase.from('itens').select('qtd_atual').eq('id', i.item_id).single();
-      if (!item || item.qtd_atual < i.quantidade) {
+      if (!item || (item.qtd_atual || 0) < i.quantidade) {
         toast({ title: `Estoque insuficiente: ${i.item?.nome}`, variant: 'destructive' });
         return;
       }
     }
-    for (const i of itens) {
-      await supabase.from('itens').update({ qtd_atual: supabase.rpc }).eq('id', i.item_id);
-      await supabase.rpc('', {});
-    }
+    
+    // Baixar itens do estoque
     for (const i of itens) {
       const { data: item } = await supabase.from('itens').select('qtd_atual').eq('id', i.item_id).single();
-      await supabase.from('itens').update({ qtd_atual: (item?.qtd_atual || 0) - i.quantidade }).eq('id', i.item_id);
-      await supabase.from('movimentacoes').insert({ tipo: 'saida', item_id: i.item_id, quantidade: i.quantidade, os_id: id, funcionario_id: os.funcionario_id, usuario_id: usuario?.id, descricao: `Saída OS #${os.numero}` });
+      const novaQtd = (item?.qtd_atual || 0) - i.quantidade;
+      await supabase.from('itens').update({ qtd_atual: novaQtd, updated_at: new Date().toISOString() }).eq('id', i.item_id);
+      await supabase.from('movimentacoes').insert({ 
+        tipo: 'saida' as const, 
+        item_id: i.item_id, 
+        quantidade: i.quantidade, 
+        os_id: id, 
+        funcionario_id: os.funcionario_id, 
+        usuario_id: usuario?.id, 
+        descricao: `Saída OS #${os.numero}` 
+      });
     }
+    
+    // Atribuir ONUs ao funcionário
     for (const o of onus) {
-      await supabase.from('onus').update({ status: 'em_uso', funcionario_atual_id: os.funcionario_id, os_vinculada_id: id }).eq('id', o.onu_id);
-      await supabase.from('onu_historico').insert({ onu_id: o.onu_id, status_anterior: 'em_estoque', status_novo: 'em_uso', funcionario_id: os.funcionario_id, os_id: id, usuario_id: usuario?.id, descricao: `Atribuída OS #${os.numero}` });
-      await supabase.from('movimentacoes').insert({ tipo: 'saida', onu_id: o.onu_id, os_id: id, funcionario_id: os.funcionario_id, usuario_id: usuario?.id, descricao: `Saída ONU OS #${os.numero}` });
+      await supabase.from('onus').update({ 
+        status: 'em_uso' as const, 
+        funcionario_atual_id: os.funcionario_id, 
+        os_vinculada_id: id,
+        updated_at: new Date().toISOString()
+      }).eq('id', o.onu_id);
+      
+      await supabase.from('onu_historico').insert({ 
+        onu_id: o.onu_id, 
+        status_anterior: 'em_estoque' as const, 
+        status_novo: 'em_uso' as const, 
+        funcionario_id: os.funcionario_id, 
+        os_id: id, 
+        usuario_id: usuario?.id, 
+        descricao: `Atribuída OS #${os.numero}` 
+      });
+      
+      await supabase.from('movimentacoes').insert({ 
+        tipo: 'saida' as const, 
+        onu_id: o.onu_id, 
+        os_id: id, 
+        funcionario_id: os.funcionario_id, 
+        usuario_id: usuario?.id, 
+        descricao: `Saída ONU OS #${os.numero}` 
+      });
     }
-    await supabase.from('ordens_servico').update({ status: 'confirmada', assinatura_base64: assinatura, assinatura_data: new Date().toISOString(), assinatura_usuario_id: usuario?.id }).eq('id', id);
-    toast({ title: 'OS confirmada' });
+    
+    // Atualizar status da OS com assinatura
+    await supabase.from('ordens_servico').update({ 
+      status: 'confirmada' as const, 
+      assinatura_base64: assinatura, 
+      assinatura_data: new Date().toISOString(), 
+      assinatura_usuario_id: usuario?.id,
+      updated_at: new Date().toISOString()
+    }).eq('id', id);
+    
+    toast({ title: 'OS confirmada com sucesso!' });
     setShowSignature(false);
     fetchOS();
   };
 
   const handleCancelar = async () => {
     if (os.status === 'confirmada') {
+      // Estornar itens
       for (const i of itens) {
         const { data: item } = await supabase.from('itens').select('qtd_atual').eq('id', i.item_id).single();
-        await supabase.from('itens').update({ qtd_atual: (item?.qtd_atual || 0) + i.quantidade }).eq('id', i.item_id);
-        await supabase.from('movimentacoes').insert({ tipo: 'cancelamento', item_id: i.item_id, quantidade: i.quantidade, os_id: id, usuario_id: usuario?.id, descricao: `Cancelamento OS #${os.numero}` });
+        const novaQtd = (item?.qtd_atual || 0) + i.quantidade;
+        await supabase.from('itens').update({ qtd_atual: novaQtd, updated_at: new Date().toISOString() }).eq('id', i.item_id);
+        await supabase.from('movimentacoes').insert({ 
+          tipo: 'cancelamento' as const, 
+          item_id: i.item_id, 
+          quantidade: i.quantidade, 
+          os_id: id, 
+          usuario_id: usuario?.id, 
+          descricao: `Cancelamento OS #${os.numero}` 
+        });
       }
+      // Estornar ONUs
       for (const o of onus) {
-        await supabase.from('onus').update({ status: 'em_estoque', funcionario_atual_id: null, os_vinculada_id: null }).eq('id', o.onu_id);
-        await supabase.from('onu_historico').insert({ onu_id: o.onu_id, status_anterior: 'em_uso', status_novo: 'em_estoque', os_id: id, usuario_id: usuario?.id, descricao: `Cancelamento OS #${os.numero}` });
-        await supabase.from('movimentacoes').insert({ tipo: 'cancelamento', onu_id: o.onu_id, os_id: id, usuario_id: usuario?.id, descricao: `Cancelamento ONU OS #${os.numero}` });
+        await supabase.from('onus').update({ 
+          status: 'em_estoque' as const, 
+          funcionario_atual_id: null, 
+          os_vinculada_id: null,
+          updated_at: new Date().toISOString()
+        }).eq('id', o.onu_id);
+        
+        await supabase.from('onu_historico').insert({ 
+          onu_id: o.onu_id, 
+          status_anterior: 'em_uso' as const, 
+          status_novo: 'em_estoque' as const, 
+          os_id: id, 
+          usuario_id: usuario?.id, 
+          descricao: `Cancelamento OS #${os.numero}` 
+        });
+        
+        await supabase.from('movimentacoes').insert({ 
+          tipo: 'cancelamento' as const, 
+          onu_id: o.onu_id, 
+          os_id: id, 
+          usuario_id: usuario?.id, 
+          descricao: `Cancelamento ONU OS #${os.numero}` 
+        });
       }
     }
-    await supabase.from('ordens_servico').update({ status: 'cancelada' }).eq('id', id);
+    
+    await supabase.from('ordens_servico').update({ 
+      status: 'cancelada' as const,
+      updated_at: new Date().toISOString()
+    }).eq('id', id);
+    
     toast({ title: 'OS cancelada' });
     fetchOS();
   };
 
   const handleDevolucao = async () => {
     const { data: dev } = await supabase.from('devolucoes').insert({ os_id: id, usuario_id: usuario?.id }).select().single();
+    
     for (const [itemId, qtd] of Object.entries(devItens)) {
       if (qtd > 0) {
         await supabase.from('devolucao_itens').insert({ devolucao_id: dev?.id, item_id: itemId, quantidade: qtd });
         const { data: item } = await supabase.from('itens').select('qtd_atual').eq('id', itemId).single();
-        await supabase.from('itens').update({ qtd_atual: (item?.qtd_atual || 0) + qtd }).eq('id', itemId);
-        await supabase.from('movimentacoes').insert({ tipo: 'devolucao', item_id: itemId, quantidade: qtd, os_id: id, usuario_id: usuario?.id, descricao: `Devolução OS #${os.numero}` });
+        await supabase.from('itens').update({ 
+          qtd_atual: (item?.qtd_atual || 0) + qtd,
+          updated_at: new Date().toISOString()
+        }).eq('id', itemId);
+        await supabase.from('movimentacoes').insert({ 
+          tipo: 'devolucao' as const, 
+          item_id: itemId, 
+          quantidade: qtd, 
+          os_id: id, 
+          usuario_id: usuario?.id, 
+          descricao: `Devolução OS #${os.numero}` 
+        });
       }
     }
+    
     for (const [onuId, checked] of Object.entries(devOnus)) {
       if (checked) {
         await supabase.from('devolucao_onus').insert({ devolucao_id: dev?.id, onu_id: onuId });
-        await supabase.from('onus').update({ status: 'em_estoque', funcionario_atual_id: null, os_vinculada_id: null }).eq('id', onuId);
-        await supabase.from('onu_historico').insert({ onu_id: onuId, status_anterior: 'em_uso', status_novo: 'em_estoque', os_id: id, usuario_id: usuario?.id, descricao: `Devolução OS #${os.numero}` });
-        await supabase.from('movimentacoes').insert({ tipo: 'devolucao', onu_id: onuId, os_id: id, usuario_id: usuario?.id, descricao: `Devolução ONU OS #${os.numero}` });
+        await supabase.from('onus').update({ 
+          status: 'em_estoque' as const, 
+          funcionario_atual_id: null, 
+          os_vinculada_id: null,
+          updated_at: new Date().toISOString()
+        }).eq('id', onuId);
+        await supabase.from('onu_historico').insert({ 
+          onu_id: onuId, 
+          status_anterior: 'em_uso' as const, 
+          status_novo: 'em_estoque' as const, 
+          os_id: id, 
+          usuario_id: usuario?.id, 
+          descricao: `Devolução OS #${os.numero}` 
+        });
+        await supabase.from('movimentacoes').insert({ 
+          tipo: 'devolucao' as const, 
+          onu_id: onuId, 
+          os_id: id, 
+          usuario_id: usuario?.id, 
+          descricao: `Devolução ONU OS #${os.numero}` 
+        });
       }
     }
-    await supabase.from('ordens_servico').update({ status: 'devolucao_parcial' }).eq('id', id);
+    
+    await supabase.from('ordens_servico').update({ 
+      status: 'devolucao_parcial' as const,
+      updated_at: new Date().toISOString()
+    }).eq('id', id);
+    
     toast({ title: 'Devolução registrada' });
     setShowDevolucao(false);
     fetchOS();
