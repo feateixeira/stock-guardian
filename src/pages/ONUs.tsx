@@ -34,7 +34,7 @@ interface ONU {
   id: string;
   codigo_unico: string;
   modelo: string | null;
-  fornecedor: string | null;
+  serial: string | null;
   status: string;
   funcionario_atual_id: string | null;
   os_vinculada_id: string | null;
@@ -63,7 +63,7 @@ export default function ONUs() {
   const [form, setForm] = useState({
     codigo_unico: '',
     modelo: '',
-    fornecedor: '',
+    serial: '',
     status: 'em_estoque',
   });
   const { toast } = useToast();
@@ -88,7 +88,7 @@ export default function ONUs() {
 
   const handleOpenNew = () => {
     setEditingId(null);
-    setForm({ codigo_unico: '', modelo: '', fornecedor: '', status: 'em_estoque' });
+    setForm({ codigo_unico: '', modelo: '', serial: '', status: 'em_estoque' });
     setIsDialogOpen(true);
   };
 
@@ -97,7 +97,7 @@ export default function ONUs() {
     setForm({
       codigo_unico: onu.codigo_unico,
       modelo: onu.modelo || '',
-      fornecedor: onu.fornecedor || '',
+      serial: onu.serial || '',
       status: onu.status,
     });
     setIsDialogOpen(true);
@@ -115,7 +115,7 @@ export default function ONUs() {
         .update({
           codigo_unico: form.codigo_unico,
           modelo: form.modelo || null,
-          fornecedor: form.fornecedor || null,
+          serial: form.serial || null,
           status: form.status as 'em_estoque' | 'em_uso' | 'extraviada' | 'devolvida',
           updated_at: new Date().toISOString(),
         })
@@ -132,7 +132,7 @@ export default function ONUs() {
       const { error } = await supabase.from('onus').insert({
         codigo_unico: form.codigo_unico,
         modelo: form.modelo || null,
-        fornecedor: form.fornecedor || null,
+        serial: form.serial || null,
         status: form.status as 'em_estoque' | 'em_uso' | 'extraviada' | 'devolvida',
       });
 
@@ -193,7 +193,7 @@ export default function ONUs() {
             <TableRow>
               <TableHead>Código</TableHead>
               <TableHead>Modelo</TableHead>
-              <TableHead>Fornecedor</TableHead>
+              <TableHead>Serial</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Funcionário Atual</TableHead>
               <TableHead>Ações</TableHead>
@@ -216,8 +216,8 @@ export default function ONUs() {
               onus.map((onu) => (
                 <TableRow key={onu.id}>
                   <TableCell className="font-mono">{onu.codigo_unico}</TableCell>
+                  <TableCell className="font-mono">{onu.serial || '-'}</TableCell>
                   <TableCell>{onu.modelo || '-'}</TableCell>
-                  <TableCell>{onu.fornecedor || '-'}</TableCell>
                   <TableCell>{getStatusBadge(onu.status)}</TableCell>
                   <TableCell>{onu.funcionario?.nome || '-'}</TableCell>
                   <TableCell>
@@ -254,17 +254,18 @@ export default function ONUs() {
                 />
               </div>
               <div>
+                <Label>Serial</Label>
+                <Input
+                  value={form.serial}
+                  onChange={(e) => setForm({ ...form, serial: e.target.value })}
+                  placeholder="Número de série"
+                />
+              </div>
+              <div>
                 <Label>Modelo</Label>
                 <Input
                   value={form.modelo}
                   onChange={(e) => setForm({ ...form, modelo: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label>Fornecedor</Label>
-                <Input
-                  value={form.fornecedor}
-                  onChange={(e) => setForm({ ...form, fornecedor: e.target.value })}
                 />
               </div>
               <div>

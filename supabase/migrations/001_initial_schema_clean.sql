@@ -87,6 +87,7 @@ CREATE TABLE IF NOT EXISTS public.funcionarios (
 -- Tabela de itens de estoque (genéricos)
 CREATE TABLE IF NOT EXISTS public.itens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  codigo TEXT,
   nome TEXT NOT NULL,
   categoria TEXT,
   unidade TEXT DEFAULT 'un',
@@ -101,7 +102,7 @@ CREATE TABLE IF NOT EXISTS public.onus (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   codigo_unico TEXT UNIQUE NOT NULL,
   modelo TEXT,
-  fornecedor TEXT,
+  serial TEXT,
   status onu_status DEFAULT 'em_estoque',
   funcionario_atual_id UUID REFERENCES public.funcionarios(id),
   os_vinculada_id UUID, -- FK será adicionada após criar a tabela ordens_servico
@@ -342,6 +343,10 @@ BEGIN
   
   IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_itens_categoria') THEN
     CREATE INDEX idx_itens_categoria ON public.itens(categoria);
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_itens_codigo') THEN
+    CREATE INDEX idx_itens_codigo ON public.itens(codigo);
   END IF;
   
   IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_onus_status') THEN

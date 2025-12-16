@@ -75,6 +75,7 @@ CREATE TABLE IF NOT EXISTS public.funcionarios (
 -- Tabela de itens de estoque (genéricos)
 CREATE TABLE IF NOT EXISTS public.itens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  codigo TEXT,
   nome TEXT NOT NULL,
   categoria TEXT,
   unidade TEXT DEFAULT 'un',
@@ -89,7 +90,7 @@ CREATE TABLE IF NOT EXISTS public.onus (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   codigo_unico TEXT UNIQUE NOT NULL,
   modelo TEXT,
-  fornecedor TEXT,
+  serial TEXT,
   status onu_status DEFAULT 'em_estoque',
   funcionario_atual_id UUID REFERENCES public.funcionarios(id),
   os_vinculada_id UUID, -- FK será adicionada após criar a tabela ordens_servico

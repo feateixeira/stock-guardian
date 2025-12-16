@@ -63,3 +63,25 @@ coverage/
 # Arquivos de backup
 *.backup
 *~
+
+# Arquivos temporários e scripts de limpeza (não precisam no repositório)
+LIMPAR_*.sql
+LIMPAR_*.md
+VERIFICAR_*.sql
+VERIFICAR_*.md
+*.backup
+*.bak
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Arquivos de cache e temporários do sistema
+AppData/
+Documents/
+Downloads/
+.vscode/
+.cursor/
+.cache/
+*.log

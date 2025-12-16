@@ -32,6 +32,7 @@ CREATE TABLE public.funcionarios (
 -- Tabela de itens de estoque (genéricos)
 CREATE TABLE public.itens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  codigo TEXT,
   nome TEXT NOT NULL,
   categoria TEXT,
   unidade TEXT DEFAULT 'un',
@@ -46,7 +47,7 @@ CREATE TABLE public.onus (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   codigo_unico TEXT UNIQUE NOT NULL,
   modelo TEXT,
-  fornecedor TEXT,
+  serial TEXT,
   status onu_status DEFAULT 'em_estoque',
   funcionario_atual_id UUID REFERENCES public.funcionarios(id),
   os_vinculada_id UUID,

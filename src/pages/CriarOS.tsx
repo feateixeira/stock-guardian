@@ -66,7 +66,7 @@ export default function CriarOS() {
   const [osItens, setOsItens] = useState<OSItem[]>([]);
   const [osOnus, setOsOnus] = useState<OSONU[]>([]);
   const [selectedItem, setSelectedItem] = useState('');
-  const [quantidade, setQuantidade] = useState(1);
+  const [quantidade, setQuantidade] = useState<string>('1');
   const [onuCodigo, setOnuCodigo] = useState('');
   const [onuSearchOpen, setOnuSearchOpen] = useState(false);
   const [onuSearchQuery, setOnuSearchQuery] = useState('');
@@ -91,7 +91,14 @@ export default function CriarOS() {
   };
 
   const handleAddItem = () => {
-    if (!selectedItem || quantidade <= 0) return;
+    const qtd = parseFloat(quantidade || '0');
+    if (!selectedItem || quantidade === '' || isNaN(qtd) || qtd <= 0) {
+      toast({ title: 'Informe uma quantidade válida', variant: 'destructive' });
+      if (quantidade === '' || isNaN(qtd) || qtd <= 0) {
+        setQuantidade('1');
+      }
+      return;
+    }
 
     const item = itens.find((i) => i.id === selectedItem);
     if (!item) return;
@@ -100,18 +107,18 @@ export default function CriarOS() {
     if (existing) {
       setOsItens(
         osItens.map((i) =>
-          i.item_id === selectedItem ? { ...i, quantidade: i.quantidade + quantidade } : i
+          i.item_id === selectedItem ? { ...i, quantidade: i.quantidade + qtd } : i
         )
       );
     } else {
       setOsItens([
         ...osItens,
-        { item_id: item.id, item_nome: item.nome, quantidade, unidade: item.unidade },
+        { item_id: item.id, item_nome: item.nome, quantidade: qtd, unidade: item.unidade },
       ]);
     }
 
     setSelectedItem('');
-    setQuantidade(1);
+    setQuantidade('1');
   };
 
   const handleRemoveItem = (itemId: string) => {
@@ -281,11 +288,31 @@ export default function CriarOS() {
               </div>
               <Input
                 type="number"
-                min="1"
-                value={quantidade}
-                onChange={(e) => setQuantidade(parseInt(e.target.value) || 1)}
-                className="w-24"
-                placeholder="Qtd"
+                min="0.01"
+                step="0.01"
+                value={quantidade === '0' ? '' : quantidade}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  // Permitir string vazia ou valores válidos
+                  if (val === '' || val === '-') {
+                    setQuantidade('');
+                  } else {
+                    // Só aceitar se for um número válido
+                    const num = parseFloat(val);
+                    if (!isNaN(num)) {
+                      setQuantidade(val);
+                    }
+                  }
+                }}
+                onBlur={(e) => {
+                  // Quando o campo perde o foco, garantir que tenha um valor válido
+                  const val = e.target.value;
+                  if (val === '' || val === '0' || isNaN(parseFloat(val)) || parseFloat(val) <= 0) {
+                    setQuantidade('1');
+                  }
+                }}
+                className="w-32"
+                placeholder="Quantidade"
               />
               <Button onClick={handleAddItem}>
                 <Plus size={16} />
@@ -306,7 +333,11 @@ export default function CriarOS() {
                   {osItens.map((i) => (
                     <TableRow key={i.item_id}>
                       <TableCell>{i.item_nome}</TableCell>
-                      <TableCell>{i.quantidade}</TableCell>
+                      <TableCell>
+                        {Number.isInteger(i.quantidade) 
+                          ? i.quantidade.toString() 
+                          : parseFloat(i.quantidade.toFixed(2)).toString()}
+                      </TableCell>
                       <TableCell>{i.unidade}</TableCell>
                       <TableCell>
                         <Button

@@ -299,7 +299,11 @@ export default function OSDetalhe() {
                   {itens.map(i => (
                     <TableRow key={i.id}>
                       <TableCell>{i.item?.nome}</TableCell>
-                      <TableCell className="text-center">{i.quantidade}</TableCell>
+                      <TableCell className="text-center">
+                        {Number.isInteger(i.quantidade) 
+                          ? i.quantidade.toString() 
+                          : parseFloat(Number(i.quantidade).toFixed(2)).toString()}
+                      </TableCell>
                       <TableCell className="text-center">{i.item?.unidade || 'un'}</TableCell>
                     </TableRow>
                   ))}
@@ -377,8 +381,21 @@ export default function OSDetalhe() {
             {itens.map(i => (
               <div key={i.id} className="flex items-center gap-2">
                 <span className="flex-1">{i.item?.nome}</span>
-                <Input type="number" min="0" max={i.quantidade} className="w-20" value={devItens[i.item_id] || 0} onChange={e => setDevItens({ ...devItens, [i.item_id]: parseInt(e.target.value) || 0 })} />
-                <span>/ {i.quantidade}</span>
+                <Input 
+                  type="number" 
+                  min="0.01" 
+                  step="0.01"
+                  max={i.quantidade} 
+                  className="w-20" 
+                  value={devItens[i.item_id] || 0} 
+                  onChange={e => {
+                    const value = parseFloat(e.target.value);
+                    setDevItens({ ...devItens, [i.item_id]: isNaN(value) || value < 0 ? 0 : value });
+                  }} 
+                />
+                <span>/ {Number.isInteger(i.quantidade) 
+                  ? i.quantidade.toString() 
+                  : parseFloat(Number(i.quantidade).toFixed(2)).toString()}</span>
               </div>
             ))}
             <div><strong>ONUs:</strong></div>
