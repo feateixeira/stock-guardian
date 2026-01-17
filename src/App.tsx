@@ -14,6 +14,7 @@ import OSLista from "./pages/OSLista";
 import OSDetalhe from "./pages/OSDetalhe";
 import Estoque from "./pages/Estoque";
 import Movimentacoes from "./pages/Movimentacoes";
+import Conferencias from "./pages/Conferencias";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/os/:id" element={<ProtectedRoute><OSDetalhe /></ProtectedRoute>} />
             <Route path="/estoque" element={<ProtectedRoute><Estoque /></ProtectedRoute>} />
             <Route path="/movimentacoes" element={<ProtectedRoute><Movimentacoes /></ProtectedRoute>} />
+            <Route path="/conferencias" element={<ProtectedRoute><Conferencias /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

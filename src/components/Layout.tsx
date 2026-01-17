@@ -10,6 +10,7 @@ import {
   ClipboardList,
   BarChart3,
   History,
+  ClipboardCheck,
   LogOut,
 } from 'lucide-react';
 
@@ -21,6 +22,7 @@ const menuItems = [
   { path: '/os', label: 'Ordens de Serviço', icon: ClipboardList },
   { path: '/estoque', label: 'Estoque Atual', icon: BarChart3 },
   { path: '/movimentacoes', label: 'Movimentações', icon: History },
+  { path: '/conferencias', label: 'Conferências', icon: ClipboardCheck },
 ];
 
 export function Layout({ children }: { children: ReactNode }) {
@@ -43,17 +45,16 @@ export function Layout({ children }: { children: ReactNode }) {
         <nav className="flex-1 p-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path || 
+            const isActive = location.pathname === item.path ||
               (item.path === '/os' && location.pathname.startsWith('/os/') && location.pathname !== '/os/nova');
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md mb-1 transition-colors ${
-                  isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'hover:bg-sidebar-accent/50'
-                }`}
+                className={`flex items-center gap-3 px-3 py-2 rounded-md mb-1 transition-colors ${isActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                  : 'hover:bg-sidebar-accent/50'
+                  }`}
               >
                 <Icon size={18} />
                 <span>{item.label}</span>

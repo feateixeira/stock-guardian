@@ -164,7 +164,8 @@ O sistema usa autenticação customizada através da tabela `usuarios`. Para pro
 ### Opções de Deploy
 
 - **Vercel**: Conecte o repositório e configure as variáveis de ambiente
-- **Netlify**: Similar ao Vercel
+  - 📖 **Guia completo**: Veja [VERCEL_DEPLOY.md](./VERCEL_DEPLOY.md) para instruções detalhadas
+- **Netlify**: Similar ao Vercel (configure as mesmas variáveis de ambiente)
 - **Supabase Hosting**: Integração nativa com Supabase
 - **Qualquer servidor**: Sirva os arquivos da pasta `dist/` com um servidor web
 

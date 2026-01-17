@@ -5,6 +5,23 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
+// Validação das variáveis de ambiente
+if (!SUPABASE_URL) {
+  throw new Error(
+    'Variável de ambiente VITE_SUPABASE_URL não está configurada. ' +
+    'Configure no arquivo .env (desenvolvimento) ou nas variáveis de ambiente da Vercel (produção). ' +
+    'Veja VERCEL_DEPLOY.md para mais informações.'
+  );
+}
+
+if (!SUPABASE_PUBLISHABLE_KEY) {
+  throw new Error(
+    'Variável de ambiente VITE_SUPABASE_PUBLISHABLE_KEY não está configurada. ' +
+    'Configure no arquivo .env (desenvolvimento) ou nas variáveis de ambiente da Vercel (produção). ' +
+    'Veja VERCEL_DEPLOY.md para mais informações.'
+  );
+}
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
